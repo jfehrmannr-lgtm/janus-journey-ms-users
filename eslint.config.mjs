@@ -11,7 +11,7 @@ export default tseslint.config(
       'node_modules/**',
       '*.config.ts',
       'eslint.config.mjs',
-      '.agents/**'
+      '.agents/**',
     ],
   },
   eslint.configs.recommended,

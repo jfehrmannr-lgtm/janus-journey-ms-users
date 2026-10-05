@@ -1,0 +1,106 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { randomUUID } from 'node:crypto';
+import { CreateUserDto } from '../dto/create-user.dto.js';
+import { FindUsersQueryDto } from '../dto/find-users-query.dto.js';
+import { UpdateUserDto } from '../dto/update-user.dto.js';
+import { UserDocument, UserSchema } from '../schemas/user.schema.js';
+import type { User } from '../types/user.types.js';
+
+@Injectable()
+export class UsersRepository {
+  constructor(
+    @InjectModel(UserSchema.name)
+    private readonly userModel: Model<UserDocument>,
+  ) {}
+
+  async create(input: CreateUserDto): Promise<User> {
+    const user = await this.userModel.create({
+      authLogins: [],
+      config: input.config,
+      email: input.email,
+      id: randomUUID(),
+      isVerified: false,
+      metadata: input.metadata ?? {},
+      userId: `user-${randomUUID()}`,
+    });
+
+    return this.toUser(user);
+  }
+
+  async findAll(query: FindUsersQueryDto): Promise<User[]> {
+    const filter: Record<string, unknown> = {};
+
+    if (query.email !== undefined) filter.email = query.email;
+    if (query.isVerified !== undefined) filter.isVerified = query.isVerified;
+    if (query.userId !== undefined) filter.userId = query.userId;
+    if (query.username !== undefined)
+      filter['config.username'] = query.username;
+
+    const documents = await this.userModel
+      .find(filter)
+      .sort({ [query.sortBy]: query.sortOrder === 'desc' ? -1 : 1 })
+      .skip((query.page - 1) * query.limit)
+      .limit(query.limit)
+      .lean<UserSchema[]>()
+      .exec();
+
+    return documents.map((document) => this.toUser(document));
+  }
+
+  async findById(id: string): Promise<User> {
+    const user = await this.userModel.findOne({ id }).lean<UserSchema>().exec();
+
+    if (!user) {
+      throw new NotFoundException(`User ${id} was not found`);
+    }
+
+    return this.toUser(user);
+  }
+
+  async update(id: string, input: UpdateUserDto): Promise<User> {
+    const update: Record<string, unknown> = {};
+
+    if (input.config?.username !== undefined) {
+      update['config.username'] = input.config.username;
+    }
+
+    const user = await this.userModel
+      .findOneAndUpdate(
+        { id },
+        { $set: update },
+        { returnDocument: 'after', runValidators: true },
+      )
+      .lean<UserSchema>()
+      .exec();
+
+    if (!user) {
+      throw new NotFoundException(`User ${id} was not found`);
+    }
+
+    return this.toUser(user);
+  }
+
+  async remove(id: string): Promise<void> {
+    const result = await this.userModel.deleteOne({ id }).exec();
+
+    if (result.deletedCount === 0) {
+      throw new NotFoundException(`User ${id} was not found`);
+    }
+  }
+
+  private toUser(document: UserSchema): User {
+    return {
+      authLogins: document.authLogins ?? [],
+      config: document.config,
+      createdAt: document.createdAt,
+      email: document.email,
+      id: document.id,
+      isVerified: document.isVerified,
+      metadata: document.metadata ?? {},
+      updatedAt: document.updatedAt,
+      userId: document.userId,
+    };
+  }
+}
