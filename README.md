@@ -1,124 +1,218 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Janus Journey Users Microservice
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+`ms-users` is the Janus Journey domain microservice responsible for the User
+domain and its persistence.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+It exposes a REST API consumed by the Janus Journey BFF and stores User data in
+MongoDB through Mongoose. The service owns User DTO validation, User CRUD
+operations, and User persistence.
 
-## Description
+## Users service status
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+The current service includes:
 
-## Project setup
+- NestJS REST API for User CRUD.
+- MongoDB persistence through Mongoose.
+- Generated internal and public User identifiers.
+- User profile configuration with username and avatar URL support.
+- User collection filtering, pagination, and sorting.
+- Request DTO validation and transformation.
+- Swagger/OpenAPI documentation at `/docs` and `/docs-json`.
+- Jest unit tests and MongoDB Memory Server e2e tests.
 
-```bash
-$ npm install
+The current phase intentionally does **not** include:
+
+- Better Auth JWT validation.
+- Better Auth session management or token issuance.
+- Journey, Folder, Task, or Feature Flag domain logic.
+- Direct access to another microservice’s database.
+- Public client access that bypasses the BFF architecture.
+
+## Architecture and responsibility
+
+```text
+Janus clients
+    │
+    ▼
+NestJS BFF :5000
+    │
+    ▼
+ms-users :4001
+    │
+    ├── User REST controller
+    ├── User application service
+    ├── User repository
+    └── Mongoose User model
+            │
+            ▼
+      MongoDB
 ```
 
-## Compile and run the project
+The service follows:
 
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```text
+Controller → Application/Domain Service → Persistence
 ```
 
-## Run tests
+The BFF owns client authentication and JWT validation. `ms-users` does not
+validate JWTs. The BFF forwards the validated identity as the internal
+`x-authenticated-subject` header when calling this service.
+
+## User API
+
+| Method   | Route        | Description                                         |
+| -------- | ------------ | --------------------------------------------------- |
+| `POST`   | `/users`     | Create a User.                                      |
+| `GET`    | `/users`     | List Users with filtering, pagination, and sorting. |
+| `GET`    | `/users/:id` | Retrieve a User by internal resource ID.            |
+| `PATCH`  | `/users/:id` | Update permitted User profile fields.               |
+| `DELETE` | `/users/:id` | Delete a User.                                      |
+
+### User collection queries
+
+`GET /users` supports the following initial query parameters:
+
+- `email`
+- `userId`
+- `username`
+- `isVerified`
+- `page`
+- `limit`
+- `sortBy`: `createdAt`, `updatedAt`, `userId`, or `email`
+- `sortOrder`: `asc` or `desc`
+
+Malformed query values are rejected by DTO validation before reaching the
+repository.
+
+## Technology stack
+
+The service uses:
+
+- **Node.js**
+- **NestJS**
+- **TypeScript** with strict checking
+- **REST**
+- **MongoDB**
+- **Mongoose** through `@nestjs/mongoose`
+- **Swagger/OpenAPI**
+- **class-validator** and **class-transformer**
+- **Jest**, **Supertest**, and **MongoDB Memory Server** for tests
+- **ESLint**, **Oxlint**, and **Prettier** for code quality
+
+## Requirements
+
+Before installing the project, make sure the following tools are available:
+
+- Node.js 22 or a compatible current Node.js release.
+- npm.
+- MongoDB for local development, or a compatible MongoDB connection string.
+
+## Installation
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+git clone <repository-url>
+cd janus-journey-ms-users
+npm install
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Create a local environment file from the example:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+cp .env.example .env
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+On Windows PowerShell:
 
-## Observability
+```powershell
+Copy-Item .env.example .env
+```
 
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
+Configure the service:
 
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
+```dotenv
+PORT=4001
+MONGODB_URI=mongodb://localhost:27017
+MONGODB_DATABASE_NAME=janus_journey
+MONGODB_SERVER_SELECTION_TIMEOUT_MS=5000
+```
 
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
+Do not commit `.env` or real credentials.
 
-To add it to this project:
+## Development
+
+Start MongoDB, then start the service:
 
 ```bash
-$ npm install @nestjs/observe
+npm run start:dev
 ```
 
-Then follow the [setup guide](https://docs.nestjs.com/observability/overview) - it takes a single import and an app key.
+The service is available at:
 
-The free plan needs no payment details and covers 300,000 events a month. You can also browse the [live demo](https://www.observe-demo.nestjs.com/dashboard) first - the whole dashboard over a busy service's data, with nothing to install.
+- API: [http://localhost:4001](http://localhost:4001)
+- Swagger UI: [http://localhost:4001/docs](http://localhost:4001/docs)
+- OpenAPI JSON: [http://localhost:4001/docs-json](http://localhost:4001/docs-json)
 
-## Resources
+## Source structure
 
-Check out a few resources that may come in handy when working with NestJS:
+```text
+src/
+├── config/                 # Environment and Swagger configuration
+└── users/                  # User feature boundary
+    ├── controllers/        # REST transport layer
+    ├── dto/                # Request and response contracts
+    ├── repositories/       # Mongoose persistence access
+    ├── schemas/            # MongoDB document schemas
+    ├── services/           # User application/domain operations
+    └── types/              # User domain types
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observe](https://observe.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+The source is organized by feature first and technical responsibility second.
 
-## Support
+## Useful commands
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+# Run the development server
+npm run start:dev
 
-## Stay in touch
+# Run ESLint
+npm run lint
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+# Run Oxlint
+npm run lint:oxlint
 
-## License
+# Run unit tests
+npm run test
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+# Run MongoDB-backed e2e tests
+npm run test:e2e
+
+# Run tests with coverage
+npm run test:cov
+
+# Check formatting
+npm run prettier:check
+
+# Format the repository
+npm run prettier:fix
+
+# Create a production build
+npm run build
+
+# Start the production server after building
+npm run start:prod
+```
+
+## Contribution guidelines
+
+When extending `ms-users`:
+
+- Keep User domain ownership and persistence inside this service.
+- Keep controllers thin and use the service/repository flow.
+- Validate and transform transport data with DTOs.
+- Do not add JWT validation or Better Auth session logic.
+- Do not add Journey, Folder, Task, or Feature Flag behavior.
+- Do not connect directly to another service’s database.
+- Keep required environment variables synchronized with `.env.example`.
+- Prefer existing dependencies and established project conventions.
+
+Meaningful completed changes are recorded in [`AIChangelog.md`](./AIChangelog.md).

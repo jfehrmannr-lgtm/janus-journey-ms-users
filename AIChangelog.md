@@ -2,6 +2,16 @@
 
 ## 2026-10-05
 
+### #JANUS-MS-USERS-0003: Document Users Microservice Usage
+
+**Work**: Build; Replaced the NestJS starter README with repository-specific documentation for the User domain service, REST API, MongoDB configuration, source organization, and development workflow.
+
+- Documented User CRUD routes, collection query parameters, Swagger endpoints, and environment configuration.
+- Documented the service-owned User persistence boundary and the separation from Better Auth JWT validation.
+- Documented the feature-first source structure, testing commands, and contribution boundaries.
+
+## 2026-10-05
+
 ### #JANUS-MS-USERS-0002: Implement Initial Users Microservice
 
 **Work**: Plan / Build; Implemented the initial User domain REST service with MongoDB persistence, validated DTO boundaries, Swagger documentation, and Jest coverage without adding authentication responsibilities to `ms-users`.
