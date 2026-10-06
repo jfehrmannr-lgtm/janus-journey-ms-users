@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { randomUUID } from 'node:crypto';
@@ -16,17 +20,42 @@ export class UsersRepository {
   ) {}
 
   async create(input: CreateUserDto): Promise<User> {
-    const user = await this.userModel.create({
-      authLogins: [],
-      config: input.config,
-      email: input.email,
-      id: randomUUID(),
-      isVerified: false,
-      metadata: input.metadata ?? {},
-      userId: `user-${randomUUID()}`,
-    });
+    const now = new Date();
 
-    return this.toUser(user);
+    try {
+      const user = await this.userModel.create({
+        authLogins: input.authLogins.map((authLogin) => ({
+          ...authLogin,
+          createdAt: now,
+          lastLoginAt: now,
+          metadata: authLogin.metadata ?? {},
+          providerEmail: authLogin.providerEmail ?? null,
+          providerUsername: authLogin.providerUsername ?? null,
+          providerAvatarUrl: authLogin.providerAvatarUrl ?? null,
+        })),
+        config: input.config,
+        email: input.email,
+        id: input.id,
+        isVerified: false,
+        metadata: input.metadata ?? {},
+        userId: `user-${randomUUID()}`,
+      });
+
+      return this.toUser(user);
+    } catch (error: unknown) {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        error.code === 11000
+      ) {
+        throw new ConflictException(
+          'The User violates a uniqueness constraint',
+        );
+      }
+
+      throw error;
+    }
   }
 
   async findAll(query: FindUsersQueryDto): Promise<User[]> {

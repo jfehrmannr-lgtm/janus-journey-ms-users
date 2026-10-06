@@ -18,10 +18,10 @@ export class AuthLoginSchema implements AuthLogin {
   @Prop({ required: true, type: String })
   authLogin!: string;
 
-  @Prop({ required: true, type: String })
+  @Prop({ required: true, type: Date })
   createdAt!: Date;
 
-  @Prop({ type: Object })
+  @Prop({ required: true, type: Date })
   lastLoginAt!: Date;
 
   @Prop({ type: Object })
@@ -75,3 +75,4 @@ export class UserSchema {
 export const UserSchemaDefinition = SchemaFactory.createForClass(UserSchema);
 UserSchemaDefinition.index({ 'config.username': 1 });
 UserSchemaDefinition.index({ isVerified: 1 });
+UserSchemaDefinition.index({ 'authLogins.authLogin': 1 }, { unique: true });

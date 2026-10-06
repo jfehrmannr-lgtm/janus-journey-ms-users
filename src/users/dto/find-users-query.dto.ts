@@ -23,7 +23,7 @@ export class FindUsersQueryDto {
   @Transform(({ value }: { value: unknown }) => value === 'true')
   isVerified?: boolean;
 
-  @ApiPropertyOptional({ default: 10, minimum: 1, maximum: 100 })
+  @ApiPropertyOptional({ type: Number, default: 10, minimum: 1, maximum: 100 })
   @IsInt()
   @IsOptional()
   @Max(100)
@@ -31,7 +31,7 @@ export class FindUsersQueryDto {
   @Type(() => Number)
   limit = 10;
 
-  @ApiPropertyOptional({ default: 1, minimum: 1 })
+  @ApiPropertyOptional({ type: Number, default: 1, minimum: 1 })
   @IsInt()
   @IsOptional()
   @Min(1)

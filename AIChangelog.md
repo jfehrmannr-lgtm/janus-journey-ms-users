@@ -2,6 +2,17 @@
 
 ## 2026-10-05
 
+### #JANUS-MS-USERS-0004: Persist Authenticated User Provider Links
+
+**Work**: Plan / Build; Extended the User domain create flow for Better Auth-backed provisioning while retaining User persistence and uniqueness ownership in `ms-users`.
+
+- Accepted the BFF-provided internal User `id`, provider login data, profile fields, and metadata through validated create DTOs.
+- Persisted AuthLogin timestamps and nullable provider fields with the User document and exposed AuthLogin data in the response contract.
+- Added a unique AuthLogin index and translated MongoDB duplicate-key failures into HTTP `409 Conflict` responses for deterministic provisioning behavior.
+- Synchronized the service defaults and environment example with port `4001` and database `ms-users-db`.
+
+## 2026-10-05
+
 ### #JANUS-MS-USERS-0003: Document Users Microservice Usage
 
 **Work**: Build; Replaced the NestJS starter README with repository-specific documentation for the User domain service, REST API, MongoDB configuration, source organization, and development workflow.
