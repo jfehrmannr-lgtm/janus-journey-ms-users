@@ -9,6 +9,7 @@ import {
   IsString,
   Max,
   Min,
+  IsDefined,
 } from 'class-validator';
 
 export class FindUsersQueryDto {
@@ -23,20 +24,20 @@ export class FindUsersQueryDto {
   @Transform(({ value }: { value: unknown }) => value === 'true')
   isVerified?: boolean;
 
-  @ApiPropertyOptional({ type: Number, default: 10, minimum: 1, maximum: 100 })
+  @ApiPropertyOptional({ type: Number, minimum: 1, maximum: 200, default: 20 })
+  @IsDefined()
   @IsInt()
-  @IsOptional()
-  @Max(100)
+  @Max(200)
   @Min(1)
   @Type(() => Number)
-  limit = 10;
+  size!: number;
 
-  @ApiPropertyOptional({ type: Number, default: 1, minimum: 1 })
+  @ApiPropertyOptional({ type: Number, minimum: 1, default: 1 })
+  @IsDefined()
   @IsInt()
-  @IsOptional()
   @Min(1)
   @Type(() => Number)
-  page = 1;
+  page!: number;
 
   @ApiPropertyOptional()
   @IsOptional()

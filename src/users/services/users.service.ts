@@ -4,6 +4,7 @@ import { FindUsersQueryDto } from '../dto/find-users-query.dto.js';
 import { UpdateUserDto } from '../dto/update-user.dto.js';
 import { UsersRepository } from '../repositories/users.repository.js';
 import type { User } from '../types/user.types.js';
+import type { CollectionResult } from '@common/collection-result.js';
 
 @Injectable()
 export class UsersService {
@@ -13,7 +14,7 @@ export class UsersService {
     return this.usersRepository.create(input);
   }
 
-  findAll(query: FindUsersQueryDto): Promise<User[]> {
+  findAll(query: FindUsersQueryDto): Promise<CollectionResult<User>> {
     return this.usersRepository.findAll(query);
   }
 

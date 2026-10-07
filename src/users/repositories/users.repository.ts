@@ -11,6 +11,7 @@ import { FindUsersQueryDto } from '../dto/find-users-query.dto.js';
 import { UpdateUserDto } from '../dto/update-user.dto.js';
 import { UserDocument, UserSchema } from '../schemas/user.schema.js';
 import type { User } from '../types/user.types.js';
+import type { CollectionResult } from '@common/collection-result.js';
 
 @Injectable()
 export class UsersRepository {
@@ -58,7 +59,7 @@ export class UsersRepository {
     }
   }
 
-  async findAll(query: FindUsersQueryDto): Promise<User[]> {
+  async findAll(query: FindUsersQueryDto): Promise<CollectionResult<User>> {
     const filter: Record<string, unknown> = {};
 
     if (query.email !== undefined) filter.email = query.email;
@@ -67,15 +68,21 @@ export class UsersRepository {
     if (query.username !== undefined)
       filter['config.username'] = query.username;
 
-    const documents = await this.userModel
-      .find(filter)
-      .sort({ [query.sortBy]: query.sortOrder === 'desc' ? -1 : 1 })
-      .skip((query.page - 1) * query.limit)
-      .limit(query.limit)
-      .lean<UserSchema[]>()
-      .exec();
+    const [documents, totalRecords] = await Promise.all([
+      this.userModel
+        .find(filter)
+        .sort({ [query.sortBy]: query.sortOrder === 'desc' ? -1 : 1 })
+        .skip((query.page - 1) * query.size)
+        .limit(query.size)
+        .lean<UserSchema[]>()
+        .exec(),
+      this.userModel.countDocuments(filter).exec(),
+    ]);
 
-    return documents.map((document) => this.toUser(document));
+    return {
+      items: documents.map((document) => this.toUser(document)),
+      totalRecords,
+    };
   }
 
   async findById(id: string): Promise<User> {

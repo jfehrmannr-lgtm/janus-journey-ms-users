@@ -35,9 +35,23 @@ export class UsersController {
   }
 
   @ApiOperation({ summary: 'List Users' })
-  @ApiResponse({ isArray: true, status: 200, type: UserResponseDto })
+  @ApiResponse({
+    status: 200,
+    schema: {
+      properties: {
+        items: {
+          type: 'array',
+          items: { $ref: '#/components/schemas/UserResponseDto' },
+        },
+        totalRecords: { type: 'integer' },
+      },
+      type: 'object',
+    },
+  })
   @Get()
-  findAll(@Query() query: FindUsersQueryDto): Promise<UserResponseDto[]> {
+  findAll(
+    @Query() query: FindUsersQueryDto,
+  ): Promise<{ items: UserResponseDto[]; totalRecords: number }> {
     return this.usersService.findAll(query);
   }
 

@@ -1,5 +1,15 @@
 # AI Changelog
 
+## 2026-10-07
+
+### #JANUS-MS-USERS-0005: Add Paginated User Collection Results
+
+**Work**: Plan / Build; Extended the User collection boundary with required bounded pagination and exact persistence-backed totals for BFF consumption.
+
+- Replaced the internal `limit` collection query parameter with required `page` and `size` values, enforcing a defensive maximum size of `200`.
+- Added database-level `skip`/`limit` and `countDocuments` execution while returning the minimal `{ items, totalRecords }` result instead of the public BFF envelope.
+- Updated User collection documentation tests and preserved the domain response mapping without exposing MongoDB `_id`.
+
 ## 2026-10-05
 
 ### #JANUS-MS-USERS-0004: Persist Authenticated User Provider Links

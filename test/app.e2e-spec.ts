@@ -44,7 +44,12 @@ describe('Users API (e2e)', () => {
   it('creates, reads, updates, filters, and deletes a User', async () => {
     const createResponse = await request(app.getHttpServer())
       .post('/users')
-      .send({ email: 'user@example.com', config: { username: 'janus-user' } })
+      .send({
+        authLogins: [{ authLogin: 'platform-user', provider: 'platform' }],
+        config: { username: 'janus-user' },
+        email: 'user@example.com',
+        id: 'auth-user-1',
+      })
       .expect(201);
 
     expect(createResponse.body).toMatchObject({
@@ -65,9 +70,16 @@ describe('Users API (e2e)', () => {
       });
 
     await request(app.getHttpServer())
-      .get('/users?username=janus-user&page=1&limit=10')
+      .get('/users?username=janus-user&page=1&size=10')
       .expect(200)
-      .expect((response) => expect(response.body).toHaveLength(1));
+      .expect((response) => {
+        const body = response.body as {
+          items: unknown[];
+          totalRecords: number;
+        };
+        expect(body.items).toHaveLength(1);
+        expect(body.totalRecords).toBe(1);
+      });
 
     const updateResponse = await request(app.getHttpServer())
       .patch(`/users/${id}`)

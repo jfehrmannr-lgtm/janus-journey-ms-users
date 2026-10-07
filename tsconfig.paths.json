@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@common/*": ["./src/common/*"],
+      "@config/*": ["./src/config/*"],
+      "@users/*": ["./src/users/*"]
+    }
+  }
+}
