@@ -1,8 +1,19 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsOptional, IsString, Length, ValidateNested } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsUrl,
+  Length,
+  ValidateNested,
+} from 'class-validator';
 
 export class UpdateUserConfigDto {
+  @ApiPropertyOptional({ nullable: true, type: String })
+  @IsOptional()
+  @IsUrl({ require_protocol: true })
+  avatarUrl?: string | null;
+
   @ApiPropertyOptional({ example: 'johann' })
   @IsOptional()
   @IsString()

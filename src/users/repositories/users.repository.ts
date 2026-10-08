@@ -102,6 +102,10 @@ export class UsersRepository {
       update['config.username'] = input.config.username;
     }
 
+    if (input.config?.avatarUrl !== undefined) {
+      update['config.avatarUrl'] = input.config.avatarUrl;
+    }
+
     const user = await this.userModel
       .findOneAndUpdate(
         { id },

@@ -1,5 +1,15 @@
 # AI Changelog
 
+## 2026-10-08
+
+### #JANUS-MS-USERS-0006: Complete PATCH User Configuration Updates
+
+**Work**: Plan / Build; Verified the `ms-users` technical-debt findings and completed the local PATCH contract for supported User configuration updates without adding authentication or cross-service deletion behavior.
+
+- Accepted and persisted `config.avatarUrl` alongside `config.username`, including nullable avatar values, through the existing validated PATCH boundary.
+- Added end-to-end coverage proving both supported configuration fields update successfully and protected identity, authentication, and system-managed fields are rejected without mutation.
+- Confirmed the existing PATCH-only route inventory, bodyless `204` deletion response, and intentionally unauthenticated `GET /users/:id` boundary during the review.
+
 ## 2026-10-07
 
 ### #JANUS-MS-USERS-0005: Add Paginated User Collection Results

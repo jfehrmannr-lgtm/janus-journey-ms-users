@@ -83,11 +83,43 @@ describe('Users API (e2e)', () => {
 
     const updateResponse = await request(app.getHttpServer())
       .patch(`/users/${id}`)
-      .send({ config: { username: 'updated-user' } })
+      .send({
+        config: {
+          avatarUrl: 'https://example.com/avatar.png',
+          username: 'updated-user',
+        },
+      })
       .expect(200);
 
     const updatedUser = updateResponse.body as unknown as User;
     expect(updatedUser.config.username).toBe('updated-user');
+    expect(updatedUser.config.avatarUrl).toBe('https://example.com/avatar.png');
+
+    await request(app.getHttpServer())
+      .patch(`/users/${id}`)
+      .send({
+        authLogins: [],
+        config: { username: 'not-applied' },
+        createdAt: new Date().toISOString(),
+        email: 'changed@example.com',
+        id: 'changed-id',
+        isVerified: true,
+        metadata: {},
+        updatedAt: new Date().toISOString(),
+        userId: 'changed-user-id',
+      })
+      .expect(400);
+
+    await request(app.getHttpServer())
+      .get(`/users/${id}`)
+      .expect(200)
+      .expect((response) => {
+        const persistedUser = response.body as unknown as User;
+        expect(persistedUser.email).toBe('user@example.com');
+        expect(persistedUser.id).toBe(id);
+        expect(persistedUser.isVerified).toBe(false);
+        expect(persistedUser.userId).toBe(createdUser.userId);
+      });
 
     await request(app.getHttpServer()).delete(`/users/${id}`).expect(204);
     await request(app.getHttpServer()).get(`/users/${id}`).expect(404);
