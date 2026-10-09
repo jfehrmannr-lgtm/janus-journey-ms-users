@@ -6,6 +6,8 @@ import { UsersRepository } from '../repositories/users.repository.js';
 import type { User } from '../types/user.types.js';
 import type { CollectionResult } from '@common/collection-result.js';
 
+const MAX_PAGE_SIZE = 200;
+
 @Injectable()
 export class UsersService {
   constructor(private readonly usersRepository: UsersRepository) {}
@@ -15,7 +17,10 @@ export class UsersService {
   }
 
   findAll(query: FindUsersQueryDto): Promise<CollectionResult<User>> {
-    return this.usersRepository.findAll(query);
+    return this.usersRepository.findAll({
+      ...query,
+      size: Math.min(query.size, MAX_PAGE_SIZE),
+    });
   }
 
   findById(id: string): Promise<User> {

@@ -130,6 +130,72 @@ describe('Users API (e2e)', () => {
       .post('/users')
       .send({ email: 'invalid' })
       .expect(400);
-    await request(app.getHttpServer()).get('/docs-json').expect(200);
+    await request(app.getHttpServer())
+      .get('/docs-json')
+      .expect(200)
+      .expect((response) => {
+        const document = response.body as {
+          paths: {
+            '/users'?: {
+              get?: {
+                parameters?: Array<{
+                  name?: string;
+                  schema?: {
+                    type?: string;
+                    minimum?: number;
+                    maximum?: number;
+                  };
+                }>;
+              };
+            };
+          };
+        };
+        const pageSize = document.paths['/users']?.get?.parameters?.find(
+          (parameter) => parameter.name === 'size',
+        );
+
+        expect(pageSize).toMatchObject({
+          schema: { minimum: 1, type: 'integer' },
+        });
+        expect(pageSize?.schema?.maximum).toBeUndefined();
+      });
+  });
+
+  it('accepts every approved authentication provider', async () => {
+    for (const provider of ['platform', 'google', 'github', 'microsoft']) {
+      await request(app.getHttpServer())
+        .post('/users')
+        .send({
+          authLogins: [{ authLogin: `oauth-${provider}-1`, provider }],
+          config: { username: `${provider}-user` },
+          email: `${provider}@example.com`,
+          id: `auth-${provider}-1`,
+        })
+        .expect(201);
+    }
+  });
+
+  it('accepts positive page sizes, normalizes oversized values, and rejects invalid values', async () => {
+    for (const pageSize of [1, 50, 200, 201, 2000, 40000]) {
+      await request(app.getHttpServer())
+        .get(`/users?page=1&size=${pageSize}`)
+        .expect(200);
+    }
+
+    for (const pageSize of ['0', '-20', '1.5', 'abc', 'Infinity']) {
+      await request(app.getHttpServer())
+        .get(`/users?page=1&size=${pageSize}`)
+        .expect(400);
+    }
+
+    for (const isVerified of ['true', 'false']) {
+      await request(app.getHttpServer())
+        .get(`/users?page=1&size=20&isVerified=${isVerified}`)
+        .expect(200);
+    }
+
+    await request(app.getHttpServer())
+      .get('/users?page=1&size=20&isVerified=invalid')
+      .expect(400);
   });
 });

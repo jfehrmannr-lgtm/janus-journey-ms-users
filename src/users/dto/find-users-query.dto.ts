@@ -7,7 +7,6 @@ import {
   IsInt,
   IsOptional,
   IsString,
-  Max,
   Min,
   IsDefined,
 } from 'class-validator';
@@ -21,18 +20,25 @@ export class FindUsersQueryDto {
   @ApiPropertyOptional()
   @IsBoolean()
   @IsOptional()
-  @Transform(({ value }: { value: unknown }) => value === 'true')
+  @Transform(({ value }: { value: unknown }) =>
+    value === 'true' ? true : value === 'false' ? false : value,
+  )
   isVerified?: boolean;
 
-  @ApiPropertyOptional({ type: Number, minimum: 1, maximum: 200, default: 20 })
+  @ApiPropertyOptional({
+    description:
+      'Requested page size. Values above 200 are accepted and normalized to 200.',
+    type: 'integer',
+    minimum: 1,
+    default: 20,
+  })
   @IsDefined()
   @IsInt()
-  @Max(200)
   @Min(1)
   @Type(() => Number)
   size!: number;
 
-  @ApiPropertyOptional({ type: Number, minimum: 1, default: 1 })
+  @ApiPropertyOptional({ type: 'integer', minimum: 1, default: 1 })
   @IsDefined()
   @IsInt()
   @Min(1)

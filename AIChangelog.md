@@ -1,5 +1,26 @@
 # AI Changelog
 
+## 2026-10-09
+
+### #JANUS-MS-USERS-0008: Restore Shared User Pagination Parameter
+
+**Work**: Plan / Build; Restored the established User collection `page` and `size` contract while retaining independent normalization of oversized valid sizes to 200.
+
+- Reused the existing `FindUsersQueryDto` pagination fields instead of introducing a User-specific parameter name.
+- Kept invalid-size rejection and strict boolean filtering behavior unchanged.
+- Updated direct-service and E2E coverage.
+
+## 2026-10-09
+
+### #JANUS-MS-USERS-0007: Align User Collection Validation
+
+**Work**: Plan / Build; Applied the approved User collection validation and normalization contract independently at the `ms-users` boundary.
+
+- Renamed the User collection page-size input to `pageSize` and removed the input maximum validator.
+- Normalized valid page sizes above 200 to an effective value of 200 before repository pagination.
+- Rejected invalid `isVerified` values instead of silently converting them to `false`.
+- Preserved the existing JWT identity boundary, User persistence behavior, and independent domain validation.
+
 ## 2026-10-08
 
 ### #JANUS-MS-USERS-0006: Complete PATCH User Configuration Updates
