@@ -5,8 +5,12 @@ import { InternalAuthGuard } from './internal-auth.guard.js';
 const createGuard = (apiKey: unknown = 'users-key'): InternalAuthGuard =>
   new InternalAuthGuard({ get: () => apiKey } as never);
 
-const contextFor = (headers: Record<string, string>, path = '/users') => ({
-  switchToHttp: () => ({ getRequest: () => ({ headers, path }) }),
+const contextFor = (
+  headers: Record<string, string>,
+  path = '/users',
+  method = 'GET',
+) => ({
+  switchToHttp: () => ({ getRequest: () => ({ headers, method, path }) }),
 });
 
 describe('InternalAuthGuard', () => {
@@ -17,6 +21,14 @@ describe('InternalAuthGuard', () => {
           'x-api-key': 'users-key',
           'x-user-id': 'user-1',
         }) as never,
+      ),
+    ).toBe(true);
+  });
+
+  it('allows User registration with only the internal API key', () => {
+    expect(
+      createGuard().canActivate(
+        contextFor({ 'x-api-key': 'users-key' }, '/users', 'POST') as never,
       ),
     ).toBe(true);
   });

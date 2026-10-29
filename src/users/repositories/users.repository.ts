@@ -20,10 +20,7 @@ export class UsersRepository {
     private readonly userModel: Model<UserDocument>,
   ) {}
 
-  async create(input: CreateUserDto, ownerId: string): Promise<User> {
-    if (input.id !== ownerId) {
-      throw new NotFoundException(`User ${input.id} was not found`);
-    }
+  async create(input: CreateUserDto): Promise<User> {
     const now = new Date();
 
     try {

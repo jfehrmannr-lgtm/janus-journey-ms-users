@@ -15,6 +15,7 @@ import {
   ApiNotFoundResponse,
   ApiOperation,
   ApiResponse,
+  ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
 import { CreateUserDto } from '../dto/create-user.dto.js';
@@ -29,13 +30,11 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @ApiOperation({ summary: 'Create a User' })
+  @ApiSecurity('X-API-Key')
   @ApiResponse({ status: 201, type: UserResponseDto })
   @Post()
-  create(
-    @Body() input: CreateUserDto,
-    @Headers('x-user-id') ownerId: string,
-  ): Promise<UserResponseDto> {
-    return this.usersService.create(input, ownerId);
+  create(@Body() input: CreateUserDto): Promise<UserResponseDto> {
+    return this.usersService.create(input);
   }
 
   @ApiOperation({ summary: 'List Users' })

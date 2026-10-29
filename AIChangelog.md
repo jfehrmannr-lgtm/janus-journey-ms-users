@@ -2,6 +2,16 @@
 
 ## 2026-10-29
 
+### #JANUS-MS-USERS-0011: Separate User Registration From Ownership Checks
+
+**Work**: Plan / Build / Validate; Removed the existing-resource ownership check from User creation while retaining API-key authentication and ownership enforcement for existing User operations.
+
+- `POST /users` now requires only `X-API-Key` at the microservice boundary and no longer looks up or compares an owner identity.
+- Preserved the BFF-derived registration identity in the create payload and retained `X-User-Id` requirements for User reads, updates, deletes, and collections.
+- Updated POST Swagger security metadata to advertise only the API-key scheme.
+
+## 2026-10-29
+
 ### #JANUS-MS-USERS-0010: Remove Duplicate Swagger User Header Parameters
 
 **Work**: Plan / Build / Validate; Matched the established `ms-journeys` Swagger document cleanup so the trusted user header is represented only by the existing security scheme.

@@ -12,8 +12,8 @@ const MAX_PAGE_SIZE = 200;
 export class UsersService {
   constructor(private readonly usersRepository: UsersRepository) {}
 
-  create(input: CreateUserDto, ownerId: string): Promise<User> {
-    return this.usersRepository.create(input, ownerId);
+  create(input: CreateUserDto): Promise<User> {
+    return this.usersRepository.create(input);
   }
 
   findAll(

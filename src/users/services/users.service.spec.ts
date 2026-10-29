@@ -13,7 +13,7 @@ describe('UsersService', () => {
     const service = new UsersService(repository);
     const input = { email: 'user@example.com', config: { username: 'user' } };
 
-    await service.create(input, 'owner-id');
+    await service.create(input);
     await service.findAll({ page: 1, size: 20 } as never, 'owner-id');
     await service.findById('user-id', 'owner-id');
     await service.update(
@@ -23,7 +23,7 @@ describe('UsersService', () => {
     );
     await service.remove('user-id', 'owner-id');
 
-    expect(repository.create).toHaveBeenCalledWith(input, 'owner-id');
+    expect(repository.create).toHaveBeenCalledWith(input);
     expect(repository.findAll).toHaveBeenCalledWith({
       page: 1,
       size: 20,

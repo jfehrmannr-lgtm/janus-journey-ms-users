@@ -27,14 +27,15 @@ export class InternalAuthGuard implements CanActivate {
     if (this.isSwaggerRequest(request)) return true;
 
     const apiKey = this.headerValue(request, API_KEY_HEADER);
+    if (!apiKey || !this.hasMatchingApiKey(apiKey)) {
+      throw new UnauthorizedException('Internal authentication is required');
+    }
+
+    if (request.method === 'POST') return true;
+
     const userId = this.headerValue(request, USER_ID_HEADER);
 
-    if (
-      !apiKey ||
-      !this.hasMatchingApiKey(apiKey) ||
-      !userId ||
-      userId.trim() === ''
-    ) {
+    if (!userId || userId.trim() === '') {
       throw new UnauthorizedException('Internal authentication is required');
     }
 
