@@ -37,5 +37,6 @@ export const validateEnvironment = (
     5000,
   ),
   MONGODB_URI: requiredString(config, 'MONGODB_URI'),
+  MS_USERS_API_KEY: requiredString(config, 'MS_USERS_API_KEY'),
   PORT: positiveInteger(config, 'PORT', 4001),
 });

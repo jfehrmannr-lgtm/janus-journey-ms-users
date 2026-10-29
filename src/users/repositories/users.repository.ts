@@ -20,7 +20,10 @@ export class UsersRepository {
     private readonly userModel: Model<UserDocument>,
   ) {}
 
-  async create(input: CreateUserDto): Promise<User> {
+  async create(input: CreateUserDto, ownerId: string): Promise<User> {
+    if (input.id !== ownerId) {
+      throw new NotFoundException(`User ${input.id} was not found`);
+    }
     const now = new Date();
 
     try {
@@ -59,8 +62,10 @@ export class UsersRepository {
     }
   }
 
-  async findAll(query: FindUsersQueryDto): Promise<CollectionResult<User>> {
-    const filter: Record<string, unknown> = {};
+  async findAll(
+    query: FindUsersQueryDto & { ownerId: string },
+  ): Promise<CollectionResult<User>> {
+    const filter: Record<string, unknown> = { id: query.ownerId };
 
     if (query.email !== undefined) filter.email = query.email;
     if (query.isVerified !== undefined) filter.isVerified = query.isVerified;
@@ -85,8 +90,11 @@ export class UsersRepository {
     };
   }
 
-  async findById(id: string): Promise<User> {
-    const user = await this.userModel.findOne({ id }).lean<UserSchema>().exec();
+  async findById(id: string, ownerId: string): Promise<User> {
+    const user = await this.userModel
+      .findOne(this.ownedFilter(id, ownerId))
+      .lean<UserSchema>()
+      .exec();
 
     if (!user) {
       throw new NotFoundException(`User ${id} was not found`);
@@ -95,7 +103,11 @@ export class UsersRepository {
     return this.toUser(user);
   }
 
-  async update(id: string, input: UpdateUserDto): Promise<User> {
+  async update(
+    id: string,
+    input: UpdateUserDto,
+    ownerId: string,
+  ): Promise<User> {
     const update: Record<string, unknown> = {};
 
     if (input.config?.username !== undefined) {
@@ -108,7 +120,7 @@ export class UsersRepository {
 
     const user = await this.userModel
       .findOneAndUpdate(
-        { id },
+        this.ownedFilter(id, ownerId),
         { $set: update },
         { returnDocument: 'after', runValidators: true },
       )
@@ -122,8 +134,10 @@ export class UsersRepository {
     return this.toUser(user);
   }
 
-  async remove(id: string): Promise<void> {
-    const result = await this.userModel.deleteOne({ id }).exec();
+  async remove(id: string, ownerId: string): Promise<void> {
+    const result = await this.userModel
+      .deleteOne(this.ownedFilter(id, ownerId))
+      .exec();
 
     if (result.deletedCount === 0) {
       throw new NotFoundException(`User ${id} was not found`);
@@ -142,5 +156,9 @@ export class UsersRepository {
       updatedAt: document.updatedAt,
       userId: document.userId,
     };
+  }
+
+  private ownedFilter(id: string, ownerId: string): { id: string } {
+    return { id: id === ownerId ? id : '__unauthorized_user__' };
   }
 }

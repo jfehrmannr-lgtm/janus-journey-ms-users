@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
+import { InternalAuthGuard } from './auth/internal-auth.guard.js';
 import { UsersModule } from './users/users.module.js';
 import { validateEnvironment } from './config/configuration.js';
 
@@ -22,6 +24,12 @@ import { validateEnvironment } from './config/configuration.js';
       }),
     }),
     UsersModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: InternalAuthGuard,
+    },
   ],
 })
 export class AppModule {}

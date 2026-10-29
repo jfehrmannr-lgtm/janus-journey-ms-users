@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Headers,
   HttpCode,
   Param,
   Patch,
@@ -30,8 +31,11 @@ export class UsersController {
   @ApiOperation({ summary: 'Create a User' })
   @ApiResponse({ status: 201, type: UserResponseDto })
   @Post()
-  create(@Body() input: CreateUserDto): Promise<UserResponseDto> {
-    return this.usersService.create(input);
+  create(
+    @Body() input: CreateUserDto,
+    @Headers('x-user-id') ownerId: string,
+  ): Promise<UserResponseDto> {
+    return this.usersService.create(input, ownerId);
   }
 
   @ApiOperation({ summary: 'List Users' })
@@ -51,16 +55,20 @@ export class UsersController {
   @Get()
   findAll(
     @Query() query: FindUsersQueryDto,
+    @Headers('x-user-id') ownerId: string,
   ): Promise<{ items: UserResponseDto[]; totalRecords: number }> {
-    return this.usersService.findAll(query);
+    return this.usersService.findAll(query, ownerId);
   }
 
   @ApiOperation({ summary: 'Get a User by ID' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiResponse({ status: 200, type: UserResponseDto })
   @Get(':id')
-  findById(@Param('id') id: string): Promise<UserResponseDto> {
-    return this.usersService.findById(id);
+  findById(
+    @Param('id') id: string,
+    @Headers('x-user-id') ownerId: string,
+  ): Promise<UserResponseDto> {
+    return this.usersService.findById(id, ownerId);
   }
 
   @ApiOperation({ summary: 'Update a User by ID' })
@@ -70,8 +78,9 @@ export class UsersController {
   update(
     @Param('id') id: string,
     @Body() input: UpdateUserDto,
+    @Headers('x-user-id') ownerId: string,
   ): Promise<UserResponseDto> {
-    return this.usersService.update(id, input);
+    return this.usersService.update(id, input, ownerId);
   }
 
   @ApiOperation({ summary: 'Delete a User by ID' })
@@ -79,7 +88,10 @@ export class UsersController {
   @ApiNotFoundResponse({ description: 'User not found' })
   @Delete(':id')
   @HttpCode(204)
-  async remove(@Param('id') id: string): Promise<void> {
-    await this.usersService.remove(id);
+  async remove(
+    @Param('id') id: string,
+    @Headers('x-user-id') ownerId: string,
+  ): Promise<void> {
+    await this.usersService.remove(id, ownerId);
   }
 }

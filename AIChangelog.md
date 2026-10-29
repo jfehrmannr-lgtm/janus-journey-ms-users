@@ -1,5 +1,25 @@
 # AI Changelog
 
+## 2026-10-29
+
+### #JANUS-MS-USERS-0010: Remove Duplicate Swagger User Header Parameters
+
+**Work**: Plan / Build / Validate; Matched the established `ms-journeys` Swagger document cleanup so the trusted user header is represented only by the existing security scheme.
+
+- Removed generated `x-user-id` header parameters from path-level and operation-level OpenAPI metadata.
+- Preserved the `X-API-Key` and `X-User-Id` security schemes and global security requirements used by Swagger Authorize.
+- Left runtime header extraction, authentication, ownership checks, and endpoint contracts unchanged.
+
+## 2026-10-29
+
+### #JANUS-MS-USERS-0009: Add Internal Authentication and User Ownership
+
+**Work**: Plan / Build; Matched the established `ms-journeys` internal API-key and trusted user-identity boundary, then scoped User reads and mutations to the authenticated identity.
+
+- Added the global `X-API-Key` / `X-User-Id` guard with timing-safe API-key comparison and Swagger documentation.
+- Required the trusted identity to match User creation and resource identifiers, returning the existing not-found convention for cross-user access.
+- Scoped User collection queries to the authenticated User while preserving pagination, filtering, sorting, and response contracts.
+
 ## 2026-10-09
 
 ### #JANUS-MS-USERS-0008: Restore Shared User Pagination Parameter

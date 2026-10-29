@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import request from 'supertest';
+import type { NextFunction, Request, Response } from 'express';
 import type { User } from '../src/users/types/user.types.js';
 
 describe('Users API (e2e)', () => {
@@ -31,6 +32,15 @@ describe('Users API (e2e)', () => {
         whitelist: true,
       }),
     );
+    // The e2e suite exercises domain behavior directly; provide the same
+    // trusted internal headers that the BFF supplies in production.
+    app.use((request: Request, _response: Response, next: NextFunction) => {
+      const body = request.body as { id?: string } | undefined;
+      request.headers['x-api-key'] ??= process.env.MS_USERS_API_KEY ?? '';
+      request.headers['x-user-id'] ??=
+        body?.id ?? request.params.id ?? 'auth-user-1';
+      next();
+    });
     setupSwagger(app);
     await app.init();
   });
@@ -171,6 +181,8 @@ describe('Users API (e2e)', () => {
           email: `${provider}@example.com`,
           id: `auth-${provider}-1`,
         })
+        .set('X-API-Key', process.env.MS_USERS_API_KEY ?? '')
+        .set('X-User-Id', `auth-${provider}-1`)
         .expect(201);
     }
   });

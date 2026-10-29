@@ -55,8 +55,11 @@ Controller → Application/Domain Service → Persistence
 ```
 
 The BFF owns client authentication and JWT validation. `ms-users` does not
-validate JWTs. The BFF forwards the validated identity as the internal
-`x-authenticated-subject` header when calling this service.
+validate JWTs. Internal requests must include the configured `X-API-Key` and
+the validated identity in `X-User-Id`. The service uses the identity only after
+the API key succeeds and scopes User reads and mutations to that identity.
+
+Swagger documents both required headers at `/docs` and `/docs-json`.
 
 ## User API
 

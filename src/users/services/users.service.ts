@@ -12,26 +12,30 @@ const MAX_PAGE_SIZE = 200;
 export class UsersService {
   constructor(private readonly usersRepository: UsersRepository) {}
 
-  create(input: CreateUserDto): Promise<User> {
-    return this.usersRepository.create(input);
+  create(input: CreateUserDto, ownerId: string): Promise<User> {
+    return this.usersRepository.create(input, ownerId);
   }
 
-  findAll(query: FindUsersQueryDto): Promise<CollectionResult<User>> {
+  findAll(
+    query: FindUsersQueryDto,
+    ownerId: string,
+  ): Promise<CollectionResult<User>> {
     return this.usersRepository.findAll({
       ...query,
       size: Math.min(query.size, MAX_PAGE_SIZE),
+      ownerId,
     });
   }
 
-  findById(id: string): Promise<User> {
-    return this.usersRepository.findById(id);
+  findById(id: string, ownerId: string): Promise<User> {
+    return this.usersRepository.findById(id, ownerId);
   }
 
-  update(id: string, input: UpdateUserDto): Promise<User> {
-    return this.usersRepository.update(id, input);
+  update(id: string, input: UpdateUserDto, ownerId: string): Promise<User> {
+    return this.usersRepository.update(id, input, ownerId);
   }
 
-  remove(id: string): Promise<void> {
-    return this.usersRepository.remove(id);
+  remove(id: string, ownerId: string): Promise<void> {
+    return this.usersRepository.remove(id, ownerId);
   }
 }
